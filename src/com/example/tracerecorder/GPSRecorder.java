@@ -1,6 +1,14 @@
 package com.example.tracerecorder;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import android.app.Service;
 import android.content.Context;
@@ -9,6 +17,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -29,7 +38,11 @@ public class GPSRecorder extends Service{
 	private LocationManager myLocationManager;
 	private String PROVIDER = LocationManager.GPS_PROVIDER;
 	private Handler handler = new Handler();
-
+	
+	//trace log file
+	private File outputFile;
+	private Writer logfilewriter;
+	
 	@Override
 	public IBinder onBind(Intent arg0) {
 		// TODO Auto-generated method stub
@@ -82,12 +95,43 @@ public class GPSRecorder extends Service{
     	int minDist = 5;//meter
     	myLocationManager.requestLocationUpdates(PROVIDER, minTime, minDist, myLocationListener);
     	
+    	//Log file
+    	File rootPath = Environment.getExternalStorageDirectory();
+    	File outDir = new File(rootPath.getAbsolutePath() + File.separator + "TraceRecorderLog");
+        if (!outDir.isDirectory()) {
+          outDir.mkdir();
+        }
+        // (1) get today's date
+        Date today = Calendar.getInstance().getTime();
+        // (2) create our date "format"
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss", Locale.TAIWAN);
+        // (3) create file
+    	String filename = formatter.format(today);
+    	outputFile = new File(outDir, filename);
+    	Log.i("Test",rootPath.getPath());
+    	Log.i("Test",filename);
+    	//
+    	try {
+			logfilewriter = new BufferedWriter(new FileWriter(outputFile));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			Log.i("Error", "Creat log file writer fail");
+			e.printStackTrace();
+		}
+    	
         super.onStart(intent, startId);
     }
 
     @Override
     public void onDestroy() {
         handler.removeCallbacks(showTime);
+        try {
+        	logfilewriter.flush();;
+			logfilewriter.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         super.onDestroy();
     }
     
@@ -103,12 +147,29 @@ public class GPSRecorder extends Service{
     }
     
     private void showMyLocation(Location l){
-        Log.i("time:", new Date().toString());
+    	String timelog = new Date().toString();
+        Log.i("time:", timelog);
     	if(l == null){
     		Log.i("location:", "Null");
+    		String log = timelog+","+"null";
+    		try {
+				logfilewriter.write(log);
+				logfilewriter.flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
     	}else{
     		Log.i("location:", "Latitude: "+ l.getLatitude());
     		Log.i("location:", "Longitude: "+ l.getLongitude());
+    		String log = timelog+","+l.getLatitude()+","+l.getLongitude();
+    		try {
+				logfilewriter.write(log);
+				logfilewriter.flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
     	}
     		   
     }
