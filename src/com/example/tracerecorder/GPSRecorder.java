@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.MediaScannerConnection;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -111,7 +112,7 @@ public class GPSRecorder extends Service{
     	outputFile = new File(outDir, filename);
     	Log.i("Test",rootPath.getPath());
     	Log.i("Test",filename);
-    	//
+    	
     	try {
 			logfilewriter = new BufferedWriter(new FileWriter(outputFile));
 		} catch (IOException e) {
@@ -133,6 +134,8 @@ public class GPSRecorder extends Service{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+        //MTP re-scan the directory to show on windows explorer immediately
+    	MediaScannerConnection.scanFile(this.getApplicationContext(), new String[] { outputFile.getAbsolutePath() }, null, null);
         super.onDestroy();
     }
     
