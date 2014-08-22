@@ -95,9 +95,10 @@ public class GPSRecorder extends Service{
     	int minDist = 5;//meter
     	myLocationManager.requestLocationUpdates(PROVIDER, minTime, minDist, myLocationListener);
     	
-    	//Log file
+    	//Log file in rootPath = "/storage/emulated/0/TraceRecorderLog"
     	File rootPath = Environment.getExternalStorageDirectory();
     	File outDir = new File(rootPath.getAbsolutePath() + File.separator + "TraceRecorderLog");
+
         if (!outDir.isDirectory()) {
           outDir.mkdir();
         }
@@ -151,7 +152,7 @@ public class GPSRecorder extends Service{
         Log.i("time:", timelog);
     	if(l == null){
     		Log.i("location:", "Null");
-    		String log = timelog+","+"null";
+    		String log = timelog+","+"null\n";
     		try {
 				logfilewriter.write(log);
 				logfilewriter.flush();
@@ -162,7 +163,7 @@ public class GPSRecorder extends Service{
     	}else{
     		Log.i("location:", "Latitude: "+ l.getLatitude());
     		Log.i("location:", "Longitude: "+ l.getLongitude());
-    		String log = timelog+","+l.getLatitude()+","+l.getLongitude();
+    		String log = timelog+","+l.getLatitude()+","+l.getLongitude()+"\n";
     		try {
 				logfilewriter.write(log);
 				logfilewriter.flush();
